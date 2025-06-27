@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Build.Reporting;
-using UnityEditor.PackageManager;
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static System.Environment;
 using static System.IO.Path;
@@ -14,64 +10,89 @@ using static UnityEditor.AssetDatabase;
 namespace Plugins.ProjectSetup.Editor
 {
     public static class ProjectSetup {
+        
         [MenuItem("Tools/Setup/Import Essential Assets", priority = 1)]
         public static void ImportEssentials() {
-            #region Editor ExtensionsSystem
-            Assets.ImportAsset("Advanced PlayerPrefs Window.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Animation Preview v1.2.0 (17 Jul 2024).unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Asset Cleaner PRO - Clean Find References v1.32.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Better Hierarchy.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Component Names v1.2.1.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Editor Auto Save.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Editor Console Pro v3.977.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Selection History.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("Unity Assets Fullscreen Editor v2.2.8.unitypackage", "Editor ExtensionsSystem");
-            Assets.ImportAsset("vFavorites 2 v2.0.7.unitypackage", "Editor ExtensionsSystem");
-            
-            #endregion
-            
-            #region RunTime ExtensionsSystem
-            Assets.ImportAsset("DOTween Pro v1.0.381.unitypackage", "RunTime ExtensionsSystem");
-            Assets.ImportAsset("DOTween HOTween v2.unitypackage", "RunTime ExtensionsSystem");
-            Assets.ImportAsset("NuGetForUnity.4.1.1.unitypackage", "RunTime ExtensionsSystem");
-            Assets.ImportAsset("Hot Reload Edit Code Without Compiling v1.12.9.unitypackage", "RunTime ExtensionsSystem");
-            Assets.ImportAsset("UniTask.2.5.10.unitypackage", "RunTime ExtensionsSystem");
-            Assets.ImportAsset("Odin Inspector 3.3.1.11.unitypackage", "RunTime ExtensionsSystem");
-
-            #endregion
-
-            #region ExtensionsSystem
-            Assets.ImportAsset("Utils.unitypackage", "ExtensionsSystem");
-            
-            #endregion
-
-
+            // Загружаем конфиг и импортируем все включенные по умолчанию пакеты
+            var config = LoadConfig();
+            if (config != null)
+            {
+                var enabledPackages = config.GetEnabledPackages();
+                ImportSelectedAssets(enabledPackages);
+            }
+            else
+            {
+                Debug.LogWarning("AssetPackageConfig not found. Please create one using Tools/Setup/Project Setup Window");
+            }
         }
 
-        [MenuItem("Tools/Setup/Install Essential Packages", priority = 2)]
-        public static void InstallPackages() {
-             Packages.InstallPackages(new[] {
-            "git+https://github.com/Cysharp/R3.git?path=src/R3.Unity/Assets/R3.Unity",
-            "com.unity.project-auditor"
-             });
-        }
-
-        [MenuItem("Tools/Setup/Create Folders", priority = 3)]
+        [MenuItem("Tools/Setup/Create Folders", priority = 2)]
         public static void CreateFolders() {
+            var config = LoadConfig();
+            bool moveScenes = config != null ? config.MoveScenesToProject : true;
+            bool moveSettings = config != null ? config.MoveSettingsToProject : true;
+            bool deleteTutorial = config != null ? config.DeleteTutorialInfo : true;
+            
+            CreateSelectedFolders(moveScenes, moveSettings, deleteTutorial);
+        }
+
+        // Новые методы для работы с конфигурационной системой
+        public static void ImportSelectedAssets(List<AssetPackageInfo> packagesToImport)
+        {
+            if (packagesToImport == null || packagesToImport.Count == 0)
+            {
+                Debug.LogWarning("No packages to import.");
+                return;
+            }
+
+            foreach (var package in packagesToImport)
+            {
+                try
+                {
+                    Assets.ImportAsset(package.FileName, package.FolderPath);
+                    Debug.Log($"Successfully imported: {package.DisplayName}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to import {package.DisplayName}: {e.Message}");
+                }
+            }
+        }
+        
+        public static void CreateSelectedFolders(bool moveScenes, bool moveSettings, bool deleteTutorial)
+        {
+            // Создаем основную структуру папок
             Folders.Create("_Project", "Animation", "Art", "Materials", "Prefabs", "Scripts/Tests", "Scripts/Architecture");
             Refresh();
-            Folders.Move("_Project", "Scenes");
-            Folders.Move("_Project", "Settings");
-
-            Folders.Delete("TutorialInfo");
+            
+            // Выборочно выполняем дополнительные действия
+            if (moveScenes)
+            {
+                Folders.Move("_Project", "Scenes");
+            }
+            
+            if (moveSettings)
+            {
+                Folders.Move("_Project", "Settings");
+            }
+            
+            if (deleteTutorial)
+            {
+                Folders.Delete("TutorialInfo");
+            }
+            
             Refresh();
-
-            MoveAsset("Assets/InputSystem_Actions.inputactions", "Assets/_Project/Settings/InputSystem_Actions.inputactions");
-            DeleteAsset("Assets/Readme.asset");
-            Refresh();
+        }
         
-            // Optional: Disable Domain Reload
-            // EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload | EnterPlayModeOptions.DisableSceneReload;
+        private static AssetPackageConfig LoadConfig()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:AssetPackageConfig");
+            if (guids.Length > 0)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+                return AssetDatabase.LoadAssetAtPath<AssetPackageConfig>(path);
+            }
+            return null;
         }
 
         static class Assets {
@@ -81,7 +102,6 @@ namespace Plugins.ProjectSetup.Editor
                     string homeDirectory = GetFolderPath(SpecialFolder.Personal);
                     basePath = Combine(homeDirectory, "Library/Unity/Asset Store-5.x");
                 } else {
-                    string defaultPath = Combine(GetFolderPath(SpecialFolder.ApplicationData), "Unity");
                     basePath = Combine("D:\\Programs\\UnityHub\\Unity-package\\BestPreset");
                 }
 
@@ -97,34 +117,6 @@ namespace Plugins.ProjectSetup.Editor
             }
         }
 
-        static class Packages {
-            static AddRequest _request;
-            static Queue<string> _packagesToInstall = new Queue<string>();
-
-            public static void InstallPackages(string[] packages) {
-                foreach (var package in packages) {
-                    _packagesToInstall.Enqueue(package);
-                }
-
-                if (_packagesToInstall.Count > 0) {
-                    StartNextPackageInstallation();
-                }
-            }
-
-            static async void StartNextPackageInstallation() {
-                _request = Client.Add(_packagesToInstall.Dequeue());
-            
-                while (!_request.IsCompleted) await Task.Delay(10);
-            
-                if (_request.Status == StatusCode.Success) Debug.Log("Installed: " + _request.Result.packageId);
-                else if (_request.Status >= StatusCode.Failure) Debug.LogError(_request.Error.message);
-
-                if (_packagesToInstall.Count > 0) {
-                    await Task.Delay(1000);
-                    StartNextPackageInstallation();
-                }
-            }
-        }
 
         static class Folders {
             public static void Create(string root, params string[] folders) {
