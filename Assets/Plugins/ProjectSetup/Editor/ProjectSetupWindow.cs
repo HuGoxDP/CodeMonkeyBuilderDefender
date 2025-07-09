@@ -7,17 +7,17 @@ namespace Plugins.ProjectSetup.Editor
 {
     public class ProjectSetupWindow : EditorWindow
     {
-        private Vector2 scrollPosition;
-        private AssetPackageConfig config;
+        private Vector2 _scrollPosition;
+        private AssetPackageConfig _config;
         
         // Динамические словари для хранения состояний чекбоксов
-        private Dictionary<AssetPackageInfo, bool> packageSelections = new Dictionary<AssetPackageInfo, bool>();
+        private Dictionary<AssetPackageInfo, bool> _packageSelections = new Dictionary<AssetPackageInfo, bool>();
         
         // Настройки структуры проекта
-        private bool createFolders = true;
-        private bool moveScenes = true;
-        private bool moveSettings = true;
-        private bool deleteTutorialInfo = true;
+        private bool _createFolders = true;
+        private bool _moveScenes = true;
+        private bool _moveSettings = true;
+        private bool _deleteTutorialInfo = true;
         
         [MenuItem("Tools/Setup/Project Setup Window", priority = 0)]
         public static void ShowWindow()
@@ -39,34 +39,34 @@ namespace Plugins.ProjectSetup.Editor
             if (guids.Length > 0)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                config = AssetDatabase.LoadAssetAtPath<AssetPackageConfig>(path);
+                _config = AssetDatabase.LoadAssetAtPath<AssetPackageConfig>(path);
             }
             
             // Если конфига нет, создаем временный для демонстрации
-            if (config == null)
+            if (_config == null)
             {
-                config = CreateInstance<AssetPackageConfig>();
-                config.InitializeDefaults();
+                _config = CreateInstance<AssetPackageConfig>();
+                _config.InitializeDefaults();
             }
         }
         
         private void InitializeSelections()
         {
-            packageSelections.Clear();
-            foreach (var package in config.Packages)
+            _packageSelections.Clear();
+            foreach (var package in _config.Packages)
             {
-                packageSelections[package] = package.EnabledByDefault;
+                _packageSelections[package] = package.EnabledByDefault;
             }
             
             // Загружаем настройки структуры из конфига
-            moveScenes = config.MoveScenesToProject;
-            moveSettings = config.MoveSettingsToProject;
-            deleteTutorialInfo = config.DeleteTutorialInfo;
+            _moveScenes = _config.MoveScenesToProject;
+            _moveSettings = _config.MoveSettingsToProject;
+            _deleteTutorialInfo = _config.DeleteTutorialInfo;
         }
         
         private void OnGUI()
         {
-            if (config == null)
+            if (_config == null)
             {
                 EditorGUILayout.HelpBox("Asset Package Config not found. Create one in Project window: Right-click → Create → Project Setup → Asset Package Config", MessageType.Warning);
                 
@@ -77,7 +77,7 @@ namespace Plugins.ProjectSetup.Editor
                 return;
             }
             
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             
             EditorGUILayout.LabelField("Project Setup Configuration", EditorStyles.boldLabel);
             EditorGUILayout.Space();
@@ -102,7 +102,7 @@ namespace Plugins.ProjectSetup.Editor
             
             foreach (var category in categories)
             {
-                var categoryPackages = config.GetPackagesByCategory(category);
+                var categoryPackages = _config.GetPackagesByCategory(category);
                 if (categoryPackages.Count == 0) continue;
                 
                 EditorGUILayout.BeginVertical("box");
@@ -125,9 +125,9 @@ namespace Plugins.ProjectSetup.Editor
                 EditorGUI.indentLevel++;
                 foreach (var package in categoryPackages)
                 {
-                    bool currentValue = packageSelections.ContainsKey(package) ? packageSelections[package] : package.EnabledByDefault;
+                    bool currentValue = _packageSelections.ContainsKey(package) ? _packageSelections[package] : package.EnabledByDefault;
                     bool newValue = EditorGUILayout.ToggleLeft(package.DisplayName, currentValue);
-                    packageSelections[package] = newValue;
+                    _packageSelections[package] = newValue;
                     
                     // Показываем описание если есть
                     if (!string.IsNullOrEmpty(package.Description))
@@ -148,13 +148,13 @@ namespace Plugins.ProjectSetup.Editor
             EditorGUILayout.LabelField("Project Structure", EditorStyles.boldLabel);
             EditorGUILayout.BeginVertical("box");
             
-            createFolders = EditorGUILayout.ToggleLeft("Create Project Folders", createFolders);
+            _createFolders = EditorGUILayout.ToggleLeft("Create Project Folders", _createFolders);
             
-            EditorGUI.BeginDisabledGroup(!createFolders);
+            EditorGUI.BeginDisabledGroup(!_createFolders);
             EditorGUI.indentLevel++;
-            moveScenes = EditorGUILayout.ToggleLeft("Move Scenes to _Project", moveScenes);
-            moveSettings = EditorGUILayout.ToggleLeft("Move Settings to _Project", moveSettings);
-            deleteTutorialInfo = EditorGUILayout.ToggleLeft("Delete TutorialInfo folder", deleteTutorialInfo);
+            _moveScenes = EditorGUILayout.ToggleLeft("Move Scenes to _Project", _moveScenes);
+            _moveSettings = EditorGUILayout.ToggleLeft("Move Settings to _Project", _moveSettings);
+            _deleteTutorialInfo = EditorGUILayout.ToggleLeft("Delete TutorialInfo folder", _deleteTutorialInfo);
             EditorGUI.indentLevel--;
             EditorGUI.EndDisabledGroup();
             
@@ -177,7 +177,7 @@ namespace Plugins.ProjectSetup.Editor
             }
             EditorGUI.EndDisabledGroup();
             
-            EditorGUI.BeginDisabledGroup(!createFolders);
+            EditorGUI.BeginDisabledGroup(!_createFolders);
             if (GUILayout.Button("Setup Project Structure", GUILayout.Height(30)))
             {
                 SetupProjectStructure();
@@ -186,7 +186,7 @@ namespace Plugins.ProjectSetup.Editor
             
             EditorGUILayout.EndHorizontal();
             
-            EditorGUI.BeginDisabledGroup(selectedPackages.Count == 0 && !createFolders);
+            EditorGUI.BeginDisabledGroup(selectedPackages.Count == 0 && !_createFolders);
             if (GUILayout.Button("Do Everything", GUILayout.Height(35)))
             {
                 DoCompleteSetup();
@@ -207,16 +207,16 @@ namespace Plugins.ProjectSetup.Editor
         
         private void SetCategorySelection(AssetCategory category, bool selected)
         {
-            var categoryPackages = config.GetPackagesByCategory(category);
+            var categoryPackages = _config.GetPackagesByCategory(category);
             foreach (var package in categoryPackages)
             {
-                packageSelections[package] = selected;
+                _packageSelections[package] = selected;
             }
         }
         
         private List<AssetPackageInfo> GetSelectedPackages()
         {
-            return packageSelections.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+            return _packageSelections.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
         }
         
         private void ImportSelectedAssets()
@@ -235,9 +235,9 @@ namespace Plugins.ProjectSetup.Editor
         
         private void SetupProjectStructure()
         {
-            if (createFolders)
+            if (_createFolders)
             {
-                ProjectSetup.CreateSelectedFolders(moveScenes, moveSettings, deleteTutorialInfo);
+                ProjectSetup.CreateSelectedFolders(_moveScenes, _moveSettings, _deleteTutorialInfo);
                 Debug.Log("Project structure setup completed.");
             }
         }
@@ -257,7 +257,7 @@ namespace Plugins.ProjectSetup.Editor
             AssetDatabase.CreateAsset(newConfig, path);
             AssetDatabase.SaveAssets();
             
-            config = newConfig;
+            _config = newConfig;
             InitializeSelections();
             
             EditorUtility.FocusProjectWindow();
