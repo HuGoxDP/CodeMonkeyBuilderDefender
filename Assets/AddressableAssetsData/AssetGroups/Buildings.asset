@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Buildings
+  m_EditorClassIdentifier: 
+  m_GroupName: Buildings
+  m_GUID: ad3def5a4f0f3b046b4cf842f382e3e3
+  m_SerializeEntries:
+  - m_GUID: 45161c5dd48d4db4b803eafd71dccf68
+    m_Address: Buildings/Harvester/StoneMIne
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 56a1cc74207e39f479a6747602f2e326
+    m_Address: Buildings/Harvester/WoodSawmill
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67ad02b9203561841988dc609642e42b
+    m_Address: Buildings/Harvester/GoldMine
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a69f2d2ecf50bc46a974aecbbae67e9
+    m_Address: Assets/_Project/ScriptableObjects/Buildings/HarvesterSO/GoldResourceHarvester.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 96f03f4b931111e41b8f400cadabba71
+    m_Address: Assets/_Project/ScriptableObjects/Buildings/HarvesterSO/WoodResourceHarvester.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cac8598bcc0e62c49b476743e0b99b36
+    m_Address: BuildingTypeListSo
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e13802239e34f9a45a96ada4972e75b9
+    m_Address: Assets/_Project/ScriptableObjects/Buildings/HarvesterSO/StoneResourceHarvester.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 43ad1dddf7af6ac48b07c4680ca48880, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 372b3dfeaec05864a9f62a25643416dd, type: 2}
+    - {fileID: 11400000, guid: c8b8b387ca95bb4468e55533ce04348b, type: 2}
