@@ -1,24 +1,21 @@
 ﻿using System.Collections.Generic;
+using _Project.Scripts.Architecture.ScriptableObjects;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture.MVC.ResourceManager
 {
     public class ResourceView : MonoBehaviour
     {
-        [SerializeField] private Transform _resourceUIPrefab;
-        
         private const float XOffsetAmount = -170;
-        
-        private Dictionary<ResourceTypeSO, ResourceUITemplate> _resourceUIDictionary;
+        [SerializeField] private Transform _resourceUIPrefab;
         private IResourceModel _resourceModel;
-        private ResourceTypeListSO _resourceTypeList;
-        
-        private void Awake()
+        private ResourceTypeListSo _resourceTypeList;
+
+        private Dictionary<ResourceTypeSo, ResourceUITemplate> _resourceUIDictionary;
+
+        private void OnDestroy()
         {
-            _resourceTypeList = Resources.Load<ResourceTypeListSO>(nameof(ResourceTypeListSO));
-            _resourceUIDictionary = new Dictionary<ResourceTypeSO, ResourceUITemplate>();
-            
-            CreateUI();
+            _resourceModel.OnResourceAmountChanged -= UpdateUI;
         }
 
         private void CreateUI()
@@ -30,28 +27,28 @@ namespace _Project.Scripts.Architecture.MVC.ResourceManager
                 var resourceTransform = Instantiate(_resourceUIPrefab, transform);
                 var resourceUITemplate = resourceTransform.GetComponent<ResourceUITemplate>();
                 resourceTransform.gameObject.SetActive(true);
-                resourceTransform.GetComponent<RectTransform>().anchoredPosition = new Vector2(-50 + XOffsetAmount * index, 0);
+                resourceTransform.GetComponent<RectTransform>().anchoredPosition =
+                    new Vector2(-50 + XOffsetAmount * index, 0);
                 resourceUITemplate.Image.sprite = resourceTypeSo.ResourceSprite;
                 resourceUITemplate.ResourceAmount.SetText("0");
                 _resourceUIDictionary[resourceTypeSo] = resourceUITemplate;
             }
         }
 
-        public void Initialize(IResourceModel resourceModel)
-        {
-            _resourceModel = resourceModel;
-            _resourceModel.OnResourceAmountChanged += UpdateUI;
-        }
-
-        private void OnDestroy()
-        {
-            _resourceModel.OnResourceAmountChanged -= UpdateUI;
-        }
-
-        private void UpdateUI((ResourceTypeSO resourceType, int currentAmount) valueTuple)
+        private void UpdateUI((ResourceTypeSo resourceType, int currentAmount) valueTuple)
         {
             var (resourceType, currentAmount) = valueTuple;
             _resourceUIDictionary[resourceType].ResourceAmount.SetText(currentAmount.ToString());
+        }
+
+        public void Initialize(IResourceModel resourceModel, ResourceTypeListSo resourceTypeList)
+        {
+            _resourceUIDictionary = new Dictionary<ResourceTypeSo, ResourceUITemplate>();
+            _resourceTypeList = resourceTypeList;
+            _resourceModel = resourceModel;
+
+            CreateUI();
+            _resourceModel.OnResourceAmountChanged += UpdateUI;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using _Project.Scripts.Architecture.ScriptableObjects;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture
@@ -7,9 +8,9 @@ namespace _Project.Scripts.Architecture
     public class ResourceGenerationData
     {
         [SerializeField] private float _timerMax;
-        [SerializeField] private ResourceTypeSO _resourceType;
+        [SerializeField] private ResourceTypeSo _resourceType;
 
         public float TimerMax => _timerMax;
-        public ResourceTypeSO ResourceType => _resourceType;
+        public ResourceTypeSo ResourceType => _resourceType;
     }
 }

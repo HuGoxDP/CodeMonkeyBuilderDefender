@@ -1,4 +1,5 @@
 ﻿using _Project.Scripts.Architecture.MVC.ResourceManager;
+using _Project.Scripts.Architecture.ScriptableObjects;
 using _Project.Scripts.Architecture.UnityServiceLocator;
 using UnityEngine;
 
@@ -6,12 +7,12 @@ namespace _Project.Scripts.Architecture
 {
     public class ResourceGenerator
     {
+        private readonly ResourceManager _resourceModel;
+        private readonly ResourceTypeSo _resourceType;
         private float _timer;
         private float _timerMax;
-        private readonly ResourceTypeSO _resourceType;
 
-        private readonly ResourceManager _resourceModel;
-        public ResourceGenerator(float timerMax, ResourceTypeSO resourceType, IServiceLocator serviceLocator)
+        public ResourceGenerator(float timerMax, ResourceTypeSo resourceType, IServiceLocator serviceLocator)
         {
             _timerMax = timerMax;
             _resourceType = resourceType;
@@ -25,10 +26,8 @@ namespace _Project.Scripts.Architecture
             if (_timer <= 0)
             {
                 _timer += _timerMax;
-                _resourceModel.AddResource(_resourceType,1);
+                _resourceModel.AddResource(_resourceType, 1);
             }
         }
     }
-
-  
 }

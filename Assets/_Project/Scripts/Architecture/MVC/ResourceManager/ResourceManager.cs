@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-
-// ReSharper disable InconsistentNaming
+﻿using System;
+using _Project.Scripts.Architecture.ScriptableObjects;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace _Project.Scripts.Architecture.MVC.ResourceManager
 {
@@ -8,16 +9,35 @@ namespace _Project.Scripts.Architecture.MVC.ResourceManager
     {
         [SerializeField] private ResourceView _resourceView;
         private IResourceModel _resourceModel;
-        private ResourceTypeListSO _resourceTypeList;
+        private ResourceTypeListSo _resourceTypeList;
+
 
         private void Awake()
         {
-            _resourceTypeList = Resources.Load<ResourceTypeListSO>(nameof(ResourceTypeListSO));
-            _resourceModel = new ResourceModel(_resourceTypeList);
-            _resourceView.Initialize(_resourceModel);
+            InitializeResourceManager().Forget();
         }
 
-        public void AddResource(ResourceTypeSO resourceTypeSo, int amount)
+        private async UniTaskVoid InitializeResourceManager()
+        {
+            try
+            {
+                _resourceTypeList = await AssetManager.Instance
+                    .LoadAsset<ResourceTypeListSo>(nameof(ResourceTypeListSo));
+
+                _resourceModel = new ResourceModel(_resourceTypeList);
+
+                if (_resourceView != null)
+                {
+                    _resourceView.Initialize(_resourceModel, _resourceTypeList);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Resource Manager init failed: {e.Message}");
+            }
+        }
+
+        public void AddResource(ResourceTypeSo resourceTypeSo, int amount)
         {
             _resourceModel.AddResource(resourceTypeSo, amount);
         }

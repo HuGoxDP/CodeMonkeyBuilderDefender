@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using _Project.Scripts.Architecture.ScriptableObjects;
 
 namespace _Project.Scripts.Architecture.MVC.ResourceManager
 {
     public interface IResourceModel
     {
-        public event Action<(ResourceTypeSO resourceType, int currentAmount)> OnResourceAmountChanged;
-        public void AddResource(ResourceTypeSO resourceTypeSo, int amount);
+        public event Action<(ResourceTypeSo resourceType, int currentAmount)> OnResourceAmountChanged;
+        public void AddResource(ResourceTypeSo resourceTypeSo, int amount);
     }
 
     public class ResourceModel : IResourceModel
     {
-        public event Action<(ResourceTypeSO resourceType, int currentAmount)> OnResourceAmountChanged;
+        private readonly Dictionary<ResourceTypeSo, int> _resourceAmountDictionary;
 
-        private readonly Dictionary<ResourceTypeSO, int> _resourceAmountDictionary;
-
-        public ResourceModel(ResourceTypeListSO resourceTypeList)
+        public ResourceModel(ResourceTypeListSo resourceTypeList)
         {
-            _resourceAmountDictionary = new Dictionary<ResourceTypeSO, int>();
+            _resourceAmountDictionary = new Dictionary<ResourceTypeSo, int>();
 
             foreach (var resourceTypeSo in resourceTypeList.List)
             {
@@ -26,7 +25,9 @@ namespace _Project.Scripts.Architecture.MVC.ResourceManager
             }
         }
 
-        public void AddResource(ResourceTypeSO resourceTypeSo, int amount)
+        public event Action<(ResourceTypeSo resourceType, int currentAmount)> OnResourceAmountChanged;
+
+        public void AddResource(ResourceTypeSo resourceTypeSo, int amount)
         {
             _resourceAmountDictionary[resourceTypeSo] += amount;
             OnResourceAmountChanged?.Invoke((resourceTypeSo, _resourceAmountDictionary[resourceTypeSo]));
