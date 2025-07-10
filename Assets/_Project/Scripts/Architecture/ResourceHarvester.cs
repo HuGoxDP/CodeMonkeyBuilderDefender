@@ -1,4 +1,5 @@
-﻿using _Project.Scripts.Architecture.UnityServiceLocator;
+﻿using _Project.Scripts.Architecture.ScriptableObjects;
+using _Project.Scripts.Architecture.UnityServiceLocator;
 
 namespace _Project.Scripts.Architecture
 {
@@ -14,7 +15,7 @@ namespace _Project.Scripts.Architecture
 
         private void Start()
         {
-            if (BuildingType is ResourceHarvesterSO resourceHarvester)
+            if (BuildingType is ResourceHarvesterSo resourceHarvester)
             {
                 var timerMax = resourceHarvester.ResourceGenerationData.TimerMax;
                 var resourceType = resourceHarvester.ResourceGenerationData.ResourceType;

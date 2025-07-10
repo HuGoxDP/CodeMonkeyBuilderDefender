@@ -1,12 +1,13 @@
-﻿using UnityEngine;
+﻿using _Project.Scripts.Architecture.ScriptableObjects;
+using UnityEngine;
 
 namespace _Project.Scripts.Architecture
 {
     public abstract class Building : MonoBehaviour
     {
-        protected BuildingTypeSO BuildingType;
+        protected BuildingTypeSo BuildingType;
 
-        public void Initialize(BuildingTypeSO buildingType)
+        public void Initialize(BuildingTypeSo buildingType)
         {
             BuildingType = buildingType;
         }
