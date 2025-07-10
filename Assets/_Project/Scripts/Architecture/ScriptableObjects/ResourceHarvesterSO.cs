@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 
-namespace _Project.Scripts.Architecture
+namespace _Project.Scripts.Architecture.ScriptableObjects
 {
     [CreateAssetMenu(
         menuName = "Game/Building/Create ResourceHarvester",
         fileName = "ResourceHarvester",
         order = 0
     )]
-    public class ResourceHarvesterSO : BuildingTypeSO
+    public class ResourceHarvesterSo : BuildingTypeSo
     {
         [SerializeField] private ResourceGenerationData _resourceGenerationData;
 

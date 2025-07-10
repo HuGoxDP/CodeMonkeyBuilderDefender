@@ -1,11 +1,9 @@
-﻿using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
-namespace _Project.Scripts.Architecture
+namespace _Project.Scripts.Architecture.ScriptableObjects
 {
     [CreateAssetMenu(menuName = "Game/Resource/Create ResourceType", fileName = "ResourceType", order = 0)]
-    public class ResourceTypeSO : ScriptableObject
+    public class ResourceTypeSo : ScriptableObject
     {
         [SerializeField] private string _nameString;
         [SerializeField] private Sprite _sprite;
