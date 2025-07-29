@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
 namespace _Project.Scripts.Architecture.ScriptableObjects
 {
     [Serializable]
-    public class ResourceAmount
+    public struct ResourceCost
     {
-        private int _amount;
-        private ResourceTypeSo _resourceType;
+        public ResourceTypeSo ResourceType;
+        public int Amount;
 
-        public ResourceTypeSo ResourceType => _resourceType;
-        public int Amount => _amount;
+        public ResourceCost(ResourceTypeSo resourceType, int amount)
+        {
+            ResourceType = resourceType;
+            Amount = amount;
+        }
     }
 
     [CreateAssetMenu(
@@ -26,18 +27,19 @@ namespace _Project.Scripts.Architecture.ScriptableObjects
     {
         [field: SerializeField] public string NameString { get; private set; }
         [field: SerializeField] public Sprite Icon { get; private set; }
-        [field: SerializeField] public List<ResourceAmount> ResourceAmounts { get; private set; }
+        [field: SerializeField] public List<ResourceCost> ResourceAmounts { get; private set; }
         [field: SerializeField] public AssetReferenceGameObject BuildingPrefabRef { get; private set; }
-
-        public async UniTask<Transform> InstantiateAsync(Transform parent, Vector3 position, Quaternion rotation,
-            CancellationToken cancellationToken = default)
-        {
-            return await BuildingFactory.CreateBuildingAsync(this, position, rotation, parent, cancellationToken);
-        }
+        [field: SerializeField] public float MinConstructionRadius { get; private set; }
+        [field: SerializeField] public float MaxConstructionRadius { get; private set; }
 
         public string GetPrefabKey()
         {
             return BuildingPrefabRef.RuntimeKey.ToString();
+        }
+
+        public ResourceCost[] GetBuildCosts()
+        {
+            return ResourceAmounts.ToArray();
         }
     }
 }
