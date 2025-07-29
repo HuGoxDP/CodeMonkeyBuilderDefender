@@ -2,7 +2,7 @@
 using _Project.Scripts.Architecture.ScriptableObjects;
 using UnityEngine;
 
-namespace _Project.Scripts.Architecture.MVC.ResourceManager
+namespace _Project.Scripts.Architecture.MVC.ResourceSystem
 {
     public class ResourceView : MonoBehaviour
     {

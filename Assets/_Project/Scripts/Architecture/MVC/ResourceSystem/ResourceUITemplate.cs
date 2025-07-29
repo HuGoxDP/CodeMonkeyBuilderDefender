@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace _Project.Scripts.Architecture.MVC.ResourceManager
+namespace _Project.Scripts.Architecture.MVC.ResourceSystem
 {
     public class ResourceUITemplate : MonoBehaviour
     {

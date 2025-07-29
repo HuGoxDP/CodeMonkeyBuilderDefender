@@ -3,7 +3,7 @@ using _Project.Scripts.Architecture.ScriptableObjects;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace _Project.Scripts.Architecture.MVC.ResourceManager
+namespace _Project.Scripts.Architecture.MVC.ResourceSystem
 {
     public class ResourceManager : MonoBehaviour
     {
