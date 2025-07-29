@@ -7,6 +7,8 @@ namespace _Project.Scripts.Architecture
     {
         protected BuildingTypeSo BuildingType;
 
+        public BuildingTypeSo GetBuildingType() => BuildingType;
+
         public void Initialize(BuildingTypeSo buildingType)
         {
             BuildingType = buildingType;

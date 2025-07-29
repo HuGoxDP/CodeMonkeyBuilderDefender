@@ -8,7 +8,7 @@ namespace _Project.Scripts.Architecture
 {
     public static class BuildingFactory
     {
-        public static async UniTask<Transform> CreateBuildingAsync(
+        public static async UniTask<Building> CreateBuildingAsync(
             BuildingTypeSo buildingType,
             Vector3 position,
             Quaternion rotation,
@@ -31,13 +31,11 @@ namespace _Project.Scripts.Architecture
                 if (instance.TryGetComponent(out Building building))
                 {
                     building.Initialize(buildingType);
-                }
-                else
-                {
-                    Debug.LogError($"Building component missing on {instance.name}");
+                    return building;
                 }
 
-                return instance.transform;
+                Debug.LogError($"Building component missing on {instance.name}");
+                return null;
             }
             catch (Exception e)
             {
