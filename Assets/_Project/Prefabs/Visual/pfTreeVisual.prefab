@@ -96,6 +96,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5877761172366299447}
+  - component: {fileID: 4100560747570946442}
   m_Layer: 0
   m_Name: pfTreeVisual
   m_TagString: Untagged
@@ -123,6 +124,18 @@ Transform:
   - {fileID: 7883123605705503146}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!210 &4100560747570946442
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766746179961913856}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &4724870052136919265
 GameObject:
   m_ObjectHideFlags: 0
