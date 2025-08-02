@@ -60,11 +60,7 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
             _cts?.Cancel();
             _cts?.Dispose();
 
-            if (_buildingModel == null)
-            {
-                Debug.LogError("BuildingManager.OnDestroy: BuildingModel is null");
-            }
-            else
+            if (_buildingModel != null)
             {
                 _buildingModel.OnBuildingError -= BuildingModelOnOnBuildingError;
                 _buildingModel.OnBuildingAdded -= BuildingModelOnOnBuildingAdded;
@@ -72,20 +68,12 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
                 _buildingModel.OnError -= BuildingModelOnOnError;
             }
 
-            if (_buildingView == null)
-            {
-                Debug.LogError("BuildingManager.OnDestroy: BuildingView is null");
-            }
-            else
+            if (_buildingView != null)
             {
                 _buildingView.BuildingTypeSelected -= SelectBuildingType;
             }
 
-            if (_buildingInputReader == null)
-            {
-                Debug.LogError("BuildingManager.OnDestroy: BuildingInputReader is null");
-            }
-            else
+            if (_buildingInputReader != null)
             {
                 _buildingInputReader.Place -= BuildBuilding;
                 _buildingInputReader.Remove -= DemolishBuilding;
@@ -172,8 +160,10 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
         {
             try
             {
-                _buildingTypeList = await AssetManager.Instance
-                    .LoadAsset<BuildingTypeListSo>(nameof(BuildingTypeListSo));
+                _buildingTypeList =
+                    await Resources.LoadAsync<BuildingTypeListSo>(nameof(BuildingTypeListSo)).ToUniTask() as
+                        BuildingTypeListSo;
+
 
                 if (_buildingTypeList == null)
                 {

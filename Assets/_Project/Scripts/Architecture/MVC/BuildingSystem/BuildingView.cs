@@ -33,7 +33,10 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
             foreach (var t in _buildingTypeList.List)
             {
                 var buildingType = t;
-                CreateCustomUI(_uiIndex, t.Icon, buildingType, buildingType.NameString);
+                if (!_buildingTypeList.UIIgnore.Contains(buildingType))
+                {
+                    CreateCustomUI(_uiIndex, t.Icon, buildingType, buildingType.NameString);
+                }
             }
         }
 

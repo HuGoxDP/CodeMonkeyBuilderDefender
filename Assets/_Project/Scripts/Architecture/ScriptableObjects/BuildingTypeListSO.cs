@@ -7,7 +7,9 @@ namespace _Project.Scripts.Architecture.ScriptableObjects
     public class BuildingTypeListSo : ScriptableObject
     {
         [SerializeField] private List<BuildingTypeSo> _list;
+        [SerializeField] private List<BuildingTypeSo> _uiIgnore;
 
         public List<BuildingTypeSo> List => _list;
+        public List<BuildingTypeSo> UIIgnore => _uiIgnore;
     }
 }

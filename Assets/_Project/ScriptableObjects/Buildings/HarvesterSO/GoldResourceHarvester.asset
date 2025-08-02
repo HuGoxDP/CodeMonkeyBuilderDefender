@@ -25,9 +25,11 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
+  <MinConstructionRadius>k__BackingField: 6
+  <MaxConstructionRadius>k__BackingField: 10
   _resourceGenerationData:
     _timerMax: 2
     _resourceType: {fileID: 11400000, guid: 60d4d166c9b0f2c42876ba2a67ceaffd, type: 2}
     _resourceGenerationCount: 1
-    _resourceDetectionRange: 5
+    _resourceDetectionRange: 6
     _maxResourceNodeCount: 5

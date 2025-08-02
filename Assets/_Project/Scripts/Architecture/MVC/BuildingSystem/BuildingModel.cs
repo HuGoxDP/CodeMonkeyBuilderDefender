@@ -87,9 +87,9 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
         public Building GetBuildingAt(Vector3 position)
         {
             var hit = Physics2D.Raycast(position, Vector2.zero, 1);
-            if (hit.collider != null)
+            if (hit.collider != null && hit.collider.TryGetComponent<Building>(out var building))
             {
-                if (hit.collider.TryGetComponent<Building>(out var building))
+                if (_buildings.Contains(building))
                 {
                     return building;
                 }
@@ -118,6 +118,7 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 
                 if (colliders.Length != 0)
                 {
+                    Debug.Log($"Position is occupied");
                     return false;
                 }
             }
@@ -134,6 +135,7 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 
                 if (building.GetBuildingType().BuildingPrefabRef == buildingType.BuildingPrefabRef)
                 {
+                    Debug.Log($" its To close for building with this type");
                     return false;
                 }
             }
@@ -143,16 +145,17 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 
         private static bool ValidateBuildingRadius(BuildingTypeSo buildingType, Vector3 position)
         {
-            Collider2D[] colliders;
-            colliders = Physics2D.OverlapCircleAll(position, buildingType.MaxConstructionRadius);
+            var colliders = Physics2D.OverlapCircleAll(position, buildingType.MaxConstructionRadius);
             foreach (var collider in colliders)
             {
-                if (collider.TryGetComponent<Building>(out var building))
+                var building = collider.GetComponent<Building>();
+                if (building != null)
                 {
                     return true;
                 }
             }
 
+            Debug.Log("BuildingModel.IsValidBuildingRadius: Building radius doesn't match.");
             return false;
         }
     }

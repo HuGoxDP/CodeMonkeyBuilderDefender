@@ -5,7 +5,7 @@ namespace _Project.Scripts.Architecture
 {
     public abstract class Building : MonoBehaviour
     {
-        protected BuildingTypeSo BuildingType;
+        [SerializeField] protected BuildingTypeSo BuildingType;
 
         public BuildingTypeSo GetBuildingType() => BuildingType;
 

@@ -1,4 +1,5 @@
-﻿using _Project.Scripts.Architecture.ScriptableObjects;
+﻿using _Project.Scripts.Architecture.MVC.BuildingSystem;
+using _Project.Scripts.Architecture.ScriptableObjects;
 using _Project.Scripts.Architecture.UnityServiceLocator;
 using UnityEngine;
 
@@ -6,10 +7,17 @@ namespace _Project.Scripts.Architecture
 {
     public class ResourceHarvester : Building
     {
+        [SerializeField] private Transform _overlayPosition;
+        private BuildingsOverlaysManager _buildingsOverlaysManager;
+
+        private HarvesterOverlay _harvesterOverlay;
+
         private int _nearbyResourceMatches;
         private ResourceGenerator _resourceGenerator;
         private ResourceSystemManager _resourceSystemManager;
         private IServiceLocator _serviceLocator;
+
+        public Transform OverlayPosition => _overlayPosition;
 
         private void Awake()
         {
@@ -21,15 +29,19 @@ namespace _Project.Scripts.Architecture
             if (BuildingType is ResourceHarvesterSo resourceHarvester)
             {
                 var data = resourceHarvester.ResourceGenerationData;
-                var colliders = Physics2D.OverlapCircleAll(transform.position, data.ResourceDetectionRange, 6);
+                var layerMask = 1 << 6;
+                var colliders = Physics2D.OverlapCircleAll(transform.position, data.ResourceDetectionRange, layerMask);
 
                 _nearbyResourceMatches = Mathf.Clamp(
                     ScanResourceMatches(data.ResourceType, colliders),
                     0,
                     data.MaxResourceNodeCount
                 );
-                _resourceGenerator = new ResourceGenerator(data, _serviceLocator);
+                _resourceGenerator = new ResourceGenerator(data);
                 _resourceGenerator.SetNearbyResourceMatches(_nearbyResourceMatches);
+
+                _serviceLocator.GetService<BuildingsOverlaysManager>(out _buildingsOverlaysManager);
+                _harvesterOverlay = _buildingsOverlaysManager.RequestHarvesterOverlay(this, _resourceGenerator);
 
                 _serviceLocator.GetService(out _resourceSystemManager);
                 _resourceSystemManager.AddResourceGenerator(_resourceGenerator);
@@ -38,6 +50,7 @@ namespace _Project.Scripts.Architecture
 
         private void OnDestroy()
         {
+            _buildingsOverlaysManager.ReleaseHarvesterOverlay(_harvesterOverlay);
             _resourceSystemManager.RemoveResourceGenerator(_resourceGenerator);
         }
 

@@ -5001,6 +5001,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3565715747615973155}
   - component: {fileID: 2268314973451219183}
+  - component: {fileID: -7223087574484591171}
   m_Layer: 0
   m_Name: pfWoodHarvesterVisual
   m_TagString: Untagged
@@ -5057,6 +5058,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!210 &-7223087574484591171
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3565715747615973154}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &3654176723631551727
 GameObject:
   m_ObjectHideFlags: 0

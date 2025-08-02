@@ -12,6 +12,9 @@ namespace _Project.Scripts.Architecture.UnityServiceLocator
 
         [SerializeField] private BuildingGhost _buildingGhost;
         [SerializeField] private ResourceSystemManager _resourceSystemManager;
+
+        [SerializeField] private BuildingsOverlaysManager _buildingsOverlaysManager;
+
         private IServiceLocator _serviceLocator;
 
         private void Awake()
@@ -22,6 +25,7 @@ namespace _Project.Scripts.Architecture.UnityServiceLocator
             _serviceLocator.RegisterService<IInputManager>(_inputManager);
             _serviceLocator.RegisterService<BuildingGhost>(_buildingGhost);
             _serviceLocator.RegisterService<ResourceSystemManager>(_resourceSystemManager);
+            _serviceLocator.RegisterService<BuildingsOverlaysManager>(_buildingsOverlaysManager);
         }
     }
 }

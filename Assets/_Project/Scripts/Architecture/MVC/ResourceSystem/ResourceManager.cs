@@ -21,8 +21,15 @@ namespace _Project.Scripts.Architecture.MVC.ResourceSystem
         {
             try
             {
-                _resourceTypeList = await AssetManager.Instance
-                    .LoadAsset<ResourceTypeListSo>(nameof(ResourceTypeListSo));
+                _resourceTypeList =
+                    await Resources.LoadAsync<ResourceTypeListSo>(nameof(ResourceTypeListSo)).ToUniTask() as
+                        ResourceTypeListSo;
+                if (_resourceTypeList == null)
+                {
+                    Debug.LogError(
+                        $"ResourceManager:InitializeResourceManager ResourceTypeListSo not found: {nameof(ResourceTypeListSo)}"
+                    );
+                }
 
                 _resourceModel = new ResourceModel(_resourceTypeList);
 
@@ -39,7 +46,7 @@ namespace _Project.Scripts.Architecture.MVC.ResourceSystem
 
         public void AddResource(ResourceTypeSo resourceTypeSo, int amount)
         {
-            _resourceModel.AddResource(resourceTypeSo, amount);
+            _resourceModel?.AddResource(resourceTypeSo, amount);
         }
     }
 }

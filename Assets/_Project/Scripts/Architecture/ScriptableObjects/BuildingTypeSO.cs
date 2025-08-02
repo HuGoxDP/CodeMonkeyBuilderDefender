@@ -6,12 +6,12 @@ using UnityEngine.AddressableAssets;
 namespace _Project.Scripts.Architecture.ScriptableObjects
 {
     [Serializable]
-    public struct ResourceCost
+    public struct GameResource
     {
         public ResourceTypeSo ResourceType;
         public int Amount;
 
-        public ResourceCost(ResourceTypeSo resourceType, int amount)
+        public GameResource(ResourceTypeSo resourceType, int amount)
         {
             ResourceType = resourceType;
             Amount = amount;
@@ -27,7 +27,7 @@ namespace _Project.Scripts.Architecture.ScriptableObjects
     {
         [field: SerializeField] public string NameString { get; private set; }
         [field: SerializeField] public Sprite Icon { get; private set; }
-        [field: SerializeField] public List<ResourceCost> ResourceAmounts { get; private set; }
+        [field: SerializeField] public List<GameResource> ResourceCostAmounts { get; private set; }
         [field: SerializeField] public AssetReferenceGameObject BuildingPrefabRef { get; private set; }
         [field: SerializeField] public float MinConstructionRadius { get; private set; }
         [field: SerializeField] public float MaxConstructionRadius { get; private set; }
@@ -37,9 +37,9 @@ namespace _Project.Scripts.Architecture.ScriptableObjects
             return BuildingPrefabRef.RuntimeKey.ToString();
         }
 
-        public ResourceCost[] GetBuildCosts()
+        public GameResource[] GetBuildCosts()
         {
-            return ResourceAmounts.ToArray();
+            return ResourceCostAmounts.ToArray();
         }
     }
 }
