@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
         [SerializeField] private Transform _buildingUIPrefab;
         [SerializeField] private Sprite _arrowSprite;
 
-        private BuildingTypeListSo _buildingTypeList;
+        private IBuildingTypeProvider _buildingTypeProvider;
         private Dictionary<string, BuildingUITemplate> _buildingUIDictionary;
         private BuildingUITemplate _selected;
         private int _uiIndex = 0;
@@ -30,10 +31,10 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 
         private void CreateUI()
         {
-            foreach (var t in _buildingTypeList.List)
+            foreach (var t in _buildingTypeProvider.GetBuildingTypes())
             {
                 var buildingType = t;
-                if (!_buildingTypeList.UIIgnore.Contains(buildingType))
+                if (!_buildingTypeProvider.GetUIIgnoreTypes().Contains(buildingType))
                 {
                     CreateCustomUI(_uiIndex, t.Icon, buildingType, buildingType.NameString);
                 }
@@ -76,15 +77,15 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
             _selected.Select();
         }
 
-        public void Initialize(BuildingTypeListSo buildingTypeList)
+        public void Initialize(IBuildingTypeProvider buildingTypeProvider)
         {
             _buildingUIDictionary = new Dictionary<string, BuildingUITemplate>();
-            _buildingTypeList = buildingTypeList;
+            _buildingTypeProvider = buildingTypeProvider;
 
             CreateCustomUI(_uiIndex, _arrowSprite, null, "Arrow");
             CreateUI();
 
-            if (_buildingTypeList.List.Count > 0)
+            if (_buildingTypeProvider.GetBuildingTypes().Count > 0)
             {
                 OnBuildingTypeSelected(null, "Arrow");
             }

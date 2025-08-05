@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
+using _Project.Scripts.Architecture.DI;
 using _Project.Scripts.Architecture.InputReader;
-using _Project.Scripts.Architecture.MVC.ResourceSystem;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
-using _Project.Scripts.Architecture.UnityServiceLocator;
 using _Project.Scripts.Architecture.Utils;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -12,47 +12,21 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 {
     public class BuildingManager : MonoBehaviour
     {
+        [SerializeField] private BuildingGhost _buildingGhost;
         [SerializeField] private BuildingView _buildingView;
         private IBuildingInputReader _buildingInputReader;
 
         private IBuildingModel _buildingModel;
-
-        private BuildingTypeSo _buildingType;
-        private BuildingTypeListSo _buildingTypeList;
+        private IBuildingTypeProvider _buildingTypeProvider;
         private Camera _camera;
         private CancellationTokenSource _cts;
-        private bool _isBuilding;
 
-        private void Awake()
-        {
-            _cts = new CancellationTokenSource();
-            _buildingModel = new BuildingModel();
-            InitializeBuildingSystem().Forget();
-        }
+        private BuildingTypeSo _currentBuildingType;
+        private bool _isBuilding;
 
         private void Start()
         {
-            var serviceLocator = ServiceLocator.Instance;
-
-            if (serviceLocator == null)
-            {
-                Debug.LogError("BuildingManager.Start: Service Locator is null");
-                return;
-            }
-
-            serviceLocator.GetService(out IInputManager inputManager);
-            serviceLocator.GetService(out ResourceManager resourceManager);
-            serviceLocator.GetService(out BuildingGhost buildingGhost);
-
-            buildingGhost.Initialize(this);
-            InitializeInput(inputManager);
-            InitializeBuildingModel(resourceManager);
-            InitializeCamera();
-
-            if (_buildingView != null)
-            {
-                _buildingView.BuildingTypeSelected += SelectBuildingType;
-            }
+            InitializeWithDI();
         }
 
         private void OnDestroy()
@@ -82,57 +56,6 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 
         public event Action<BuildingTypeSo> BuildingTypeSelected;
 
-        private void InitializeCamera()
-        {
-            _camera = Camera.main ?? FindFirstObjectByType<Camera>();
-
-            if (_camera != null) return;
-
-            Debug.LogError("BuildingManager.InitializeCamera: No camera found in scene!");
-            enabled = false;
-        }
-
-        private void InitializeBuildingModel(ResourceManager resourceManager)
-        {
-            if (resourceManager == null)
-            {
-                Debug.LogError("BuildingManager.InitializeBuildingModel: resourceManager is null");
-                return;
-            }
-
-            if (_buildingModel == null)
-            {
-                Debug.LogError("BuildingManager.InitializeBuildingModel: BuildingModel is null");
-                return;
-            }
-
-            _buildingModel.SetResourceManager(resourceManager);
-            _buildingModel.OnBuildingError += BuildingModelOnOnBuildingError;
-            _buildingModel.OnBuildingAdded += BuildingModelOnOnBuildingAdded;
-            _buildingModel.OnBuildingRemoved += BuildingModelOnOnBuildingRemoved;
-            _buildingModel.OnError += BuildingModelOnOnError;
-        }
-
-        private void InitializeInput(IInputManager inputManager)
-        {
-            if (inputManager == null)
-            {
-                Debug.LogError("BuildingManager.InitializeInput: inputManager is null");
-                return;
-            }
-
-            _buildingInputReader = inputManager.BuildingInputReader;
-
-            if (_buildingInputReader == null)
-            {
-                Debug.LogError("BuildingManager.InitializeInput: BuildingInputReader is null");
-                return;
-            }
-
-            _buildingInputReader.Place += BuildBuilding;
-            _buildingInputReader.Remove += DemolishBuilding;
-        }
-
         private void BuildingModelOnOnError(string obj)
         {
             Debug.LogError(obj);
@@ -156,45 +79,20 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
             Debug.Log($"BuildingModel.OnBuildingError");
         }
 
-        private async UniTaskVoid InitializeBuildingSystem()
-        {
-            try
-            {
-                _buildingTypeList =
-                    await Resources.LoadAsync<BuildingTypeListSo>(nameof(BuildingTypeListSo)).ToUniTask() as
-                        BuildingTypeListSo;
-
-
-                if (_buildingTypeList == null)
-                {
-                    throw new Exception("Building type list is null!");
-                }
-
-                if (_buildingView != null)
-                {
-                    _buildingView.Initialize(_buildingTypeList);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Building system init failed: {e.Message}");
-            }
-        }
-
         private void SelectBuildingType(BuildingTypeSo buildingType)
         {
-            _buildingType = buildingType;
-            BuildingTypeSelected?.Invoke(_buildingType);
+            _currentBuildingType = buildingType;
+            BuildingTypeSelected?.Invoke(_currentBuildingType);
         }
 
         //Build a building at the mouse position
         private void BuildBuilding()
         {
-            if (_buildingType == null || _isBuilding)
+            if (_currentBuildingType == null || _isBuilding)
                 return;
 
             BuildAsync(
-                _buildingType,
+                _currentBuildingType,
                 WorldPositionUtils.ScreenToWorldPosition(_camera, _buildingInputReader.PointPosition)
             ).Forget();
         }
@@ -241,8 +139,75 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
                 _buildingModel.RemoveBuilding(building);
                 Destroy(building.gameObject);
             }
-
-            // - Remove building GameObject.
         }
+
+        #region Initialization
+
+        // ReSharper disable once InconsistentNaming
+        private void InitializeWithDI()
+        {
+            try
+            {
+                var container = DIContainer.Instance;
+
+                var inputManager = container.Resolve<IInputManager>();
+                var gameResourceManager = container.Resolve<IGameResourceManager>();
+                _buildingTypeProvider = container.Resolve<IBuildingTypeProvider>();
+
+                InitializeBuildingManager(inputManager, gameResourceManager);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"DIResourceHarvester: Failed to resolve dependencies - {ex.Message}");
+            }
+        }
+
+        private void InitializeBuildingManager(IInputManager inputManager, IGameResourceManager gameResourceManager)
+        {
+            _cts = new CancellationTokenSource();
+            _buildingModel = new BuildingModel();
+
+            _buildingView.Initialize(_buildingTypeProvider);
+            _buildingInputReader = inputManager.BuildingInputReader;
+
+
+            _buildingGhost.Initialize(this, _buildingInputReader);
+
+            InitializeInput();
+            InitializeBuildingModel(gameResourceManager);
+            InitializeCamera();
+
+            if (_buildingView != null)
+            {
+                _buildingView.BuildingTypeSelected += SelectBuildingType;
+            }
+        }
+
+        private void InitializeCamera()
+        {
+            _camera = Camera.main ?? FindFirstObjectByType<Camera>();
+
+            if (_camera != null) return;
+
+            Debug.LogError("BuildingManager.InitializeCamera: No camera found in scene!");
+            enabled = false;
+        }
+
+        private void InitializeBuildingModel(IGameResourceManager gameResourceManager)
+        {
+            _buildingModel.SetResourceManager(gameResourceManager);
+            _buildingModel.OnBuildingError += BuildingModelOnOnBuildingError;
+            _buildingModel.OnBuildingAdded += BuildingModelOnOnBuildingAdded;
+            _buildingModel.OnBuildingRemoved += BuildingModelOnOnBuildingRemoved;
+            _buildingModel.OnError += BuildingModelOnOnError;
+        }
+
+        private void InitializeInput()
+        {
+            _buildingInputReader.Place += BuildBuilding;
+            _buildingInputReader.Remove += DemolishBuilding;
+        }
+
+        #endregion
     }
 }

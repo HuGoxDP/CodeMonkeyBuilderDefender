@@ -1,38 +1,111 @@
 ﻿using System.Collections.Generic;
+using _Project.Scripts.Architecture.Interfaces;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 {
-    public class BuildingsOverlaysManager : MonoBehaviour
+    public class BuildingsOverlaysManager : MonoBehaviour, IHarvesterOverlayManager
     {
-        [SerializeField] private HarvesterOverlay[] _harvesterOverlaysTEST;
+        [SerializeField] private GameObject _harvesterOverlayPrefab;
+        [SerializeField] private Transform _harvesterOverlayParent;
 
-        private Queue<HarvesterOverlay> _releasedHarvesterOverlays;
-        // Сделать Пулом
+        private IObjectPool<IHarvesterOverlay> _harvesterOverlayPool;
+        private Dictionary<IResourceHarvester, IHarvesterOverlay> _harvesterToOverlay;
 
         private void Awake()
         {
-            _releasedHarvesterOverlays = new Queue<HarvesterOverlay>(_harvesterOverlaysTEST);
+            _harvesterToOverlay = new Dictionary<IResourceHarvester, IHarvesterOverlay>();
+
+            _harvesterOverlayPool = new ObjectPool<IHarvesterOverlay>(
+                CreateHarvesterOverlay,
+                ActionOnGet,
+                ActionOnRelease
+            );
+
+            void ActionOnGet(IHarvesterOverlay overlay)
+            {
+                overlay.GameObject.SetActive(true);
+                overlay.InitializePool(_harvesterOverlayPool);
+            }
         }
 
-        public HarvesterOverlay RequestHarvesterOverlay(ResourceHarvester resourceHarvester,
-            ResourceGenerator resourceGenerator)
+        private void Start()
         {
-            var overlay = _releasedHarvesterOverlays.Dequeue();
+            InvokeRepeating(nameof(CleanDeadLinks), 15, 30);
+        }
 
-            overlay.gameObject.SetActive(true);
+        private void OnDestroy()
+        {
+            if (IsInvoking())
+                CancelInvoke();
+        }
+
+        public void RequestHarvesterOverlay(IResourceHarvester resourceHarvester,
+            IResourceGenerator resourceGenerator)
+        {
+            var overlay = _harvesterOverlayPool.Get();
             overlay.Initialize(resourceHarvester, resourceGenerator);
-
-            return overlay;
+            _harvesterToOverlay[resourceHarvester] = overlay;
         }
 
-        public void ReleaseHarvesterOverlay(HarvesterOverlay overlay)
+        public void ReleaseHarvesterOverlay(IResourceHarvester harvester)
         {
-            overlay.gameObject.SetActive(false);
-            overlay.transform.position = new Vector3(-10000, -10000, 0);
-            overlay.Release();
+            if (harvester is Building building &&
+                (building == null || building.gameObject == null))
+            {
+                _harvesterToOverlay.Remove(harvester);
+                return;
+            }
 
-            _releasedHarvesterOverlays.Enqueue(overlay);
+            if (_harvesterToOverlay.Remove(harvester, out var overlay))
+            {
+                overlay.Release();
+            }
+        }
+
+        private void CleanDeadLinks()
+        {
+            var keysToRemove = new List<IResourceHarvester>();
+
+            foreach (var kvp in _harvesterToOverlay)
+            {
+                var harvester = kvp.Key;
+                if (harvester is Building building)
+                {
+                    if (building == null || building.gameObject == null)
+                    {
+                        keysToRemove.Add(harvester);
+                    }
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                if (_harvesterToOverlay.TryGetValue(key, out var overlay))
+                {
+                    overlay.Release();
+                    _harvesterToOverlay.Remove(key);
+                }
+            }
+        }
+
+        private void ActionOnRelease(IHarvesterOverlay overlay)
+        {
+            if (overlay.GameObject != null)
+            {
+                overlay.GameObject.SetActive(false);
+                overlay.GameObject.transform.position = new Vector3(-10000, -10000, 0);
+            }
+        }
+
+        private IHarvesterOverlay CreateHarvesterOverlay()
+        {
+            // TODO Factory
+            var overlayObject = Instantiate(_harvesterOverlayPrefab, _harvesterOverlayParent, true);
+            overlayObject.SetActive(false);
+
+            return overlayObject.GetComponent<HarvesterOverlay>();
         }
     }
 }

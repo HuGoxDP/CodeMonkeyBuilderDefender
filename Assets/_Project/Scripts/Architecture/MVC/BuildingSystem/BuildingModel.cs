@@ -1,31 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using _Project.Scripts.Architecture.MVC.ResourceSystem;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 {
-    public interface IBuildingModel
-    {
-        event Action<Building> OnBuildingAdded;
-        event Action<Building> OnBuildingRemoved;
-        event Action OnBuildingError;
-        event Action<string> OnError;
-
-        void AddBuilding(Building building);
-        void RemoveBuilding(Building building);
-        void SetResourceManager(ResourceManager resourceManager);
-
-        UniTask<bool> CanBuild(BuildingTypeSo buildingType, Vector3 position);
-        Building GetBuildingAt(Vector3 position);
-    }
-
     public class BuildingModel : IBuildingModel
     {
         private readonly List<Building> _buildings = new List<Building>();
-        private ResourceManager _resourceManager;
+        private IGameResourceManager _gameResourceManager;
         public event Action<Building> OnBuildingAdded;
         public event Action<Building> OnBuildingRemoved;
         public event Action OnBuildingError;
@@ -64,9 +49,9 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
             OnBuildingRemoved?.Invoke(building);
         }
 
-        public void SetResourceManager(ResourceManager resourceManager)
+        public void SetResourceManager(IGameResourceManager gameResourceManager)
         {
-            _resourceManager = resourceManager;
+            _gameResourceManager = gameResourceManager;
         }
 
         public async UniTask<bool> CanBuild(BuildingTypeSo buildingType, Vector3 position)

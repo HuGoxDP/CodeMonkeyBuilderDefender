@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
 
 namespace _Project.Scripts.Architecture.MVC.ResourceSystem
@@ -17,11 +18,11 @@ namespace _Project.Scripts.Architecture.MVC.ResourceSystem
     {
         private readonly Dictionary<ResourceTypeSo, int> _resourceAmountDictionary;
 
-        public ResourceModel(ResourceTypeListSo resourceTypeList)
+        public ResourceModel(IResourceTypeProvider resourceTypeProvider)
         {
             _resourceAmountDictionary = new Dictionary<ResourceTypeSo, int>();
 
-            foreach (var resourceTypeSo in resourceTypeList.List)
+            foreach (var resourceTypeSo in resourceTypeProvider.GetResourceTypes())
             {
                 _resourceAmountDictionary[resourceTypeSo] = 0;
             }

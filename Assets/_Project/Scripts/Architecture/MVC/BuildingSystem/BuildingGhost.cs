@@ -1,50 +1,60 @@
 ﻿using System;
 using _Project.Scripts.Architecture.InputReader;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
-using _Project.Scripts.Architecture.UnityServiceLocator;
 using _Project.Scripts.Architecture.Utils;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture.MVC.BuildingSystem
 {
-    public class BuildingGhost : MonoBehaviour
+    public class BuildingGhost : MonoBehaviour, IBuildingGhost
     {
         [SerializeField] private SpriteRenderer _sprite;
+
         private BuildingManager _buildingManager;
+
+        private bool _isInitialized = false;
         private IPointerPositionInputReader _pointerPositionInputReader;
 
-        private void Awake()
+        private void Start()
         {
             Hide();
         }
 
-        private void Start()
-        {
-            ServiceLocator.Instance.GetService(out IInputManager inputManager);
-            _pointerPositionInputReader = inputManager.BuildingInputReader;
-            if (_pointerPositionInputReader == null)
-            {
-                throw new NullReferenceException("_pointerPositionInputReader");
-            }
-        }
-
         private void Update()
         {
-            transform.position = WorldPositionUtils.ScreenToWorldPosition(_pointerPositionInputReader.PointPosition);
+            if (_isInitialized)
+            {
+                transform.position =
+                    WorldPositionUtils.ScreenToWorldPosition(_pointerPositionInputReader.PointPosition);
+            }
         }
 
         private void OnDestroy()
         {
-            if (_buildingManager != null)
+            if (_buildingManager)
             {
                 _buildingManager.BuildingTypeSelected -= ManagerOnBuildingTypeSelected;
             }
         }
 
-        public void Initialize(BuildingManager manager)
+        public void Initialize(BuildingManager manager, IPointerPositionInputReader pointerPositionInputReader)
         {
-            _buildingManager = manager ?? throw new ArgumentNullException(nameof(manager));
+            if (_isInitialized)
+                return;
+
+            _pointerPositionInputReader = pointerPositionInputReader ?? throw new ArgumentNullException(
+                nameof(pointerPositionInputReader),
+                $"BuildingGhost:Initialize: IPointerPositionInputReader is null"
+            );
+            _buildingManager = manager ?? throw new ArgumentNullException(
+                nameof(manager),
+                $"BuildingGhost:Initialize: BuildingManager is null"
+            );
+
             manager.BuildingTypeSelected += ManagerOnBuildingTypeSelected;
+
+            _isInitialized = true;
         }
 
         private void ManagerOnBuildingTypeSelected(BuildingTypeSo building)
