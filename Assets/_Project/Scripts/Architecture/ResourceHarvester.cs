@@ -1,57 +1,29 @@
-﻿using _Project.Scripts.Architecture.MVC.BuildingSystem;
+﻿using System;
+using _Project.Scripts.Architecture.DI;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
-using _Project.Scripts.Architecture.UnityServiceLocator;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture
 {
-    public class ResourceHarvester : Building
+    public class ResourceHarvester : Building, IResourceHarvester
     {
         [SerializeField] private Transform _overlayPosition;
-        private BuildingsOverlaysManager _buildingsOverlaysManager;
+        private IOverlayController _overlayController;
+        private IResourceGenerator _resourceGenerator;
+        private IResourceGeneratorFactory _resourceGeneratorFactory;
+        private IResourceGeneratorManager _resourceGeneratorManager;
 
-        private HarvesterOverlay _harvesterOverlay;
-
-        private int _nearbyResourceMatches;
-        private ResourceGenerator _resourceGenerator;
-        private ResourceSystemManager _resourceSystemManager;
-        private IServiceLocator _serviceLocator;
-
-        public Transform OverlayPosition => _overlayPosition;
-
-        private void Awake()
-        {
-            _serviceLocator = ServiceLocator.Instance;
-        }
+        private IResourceScanner _resourceScanner;
 
         private void Start()
         {
-            if (BuildingType is ResourceHarvesterSo resourceHarvester)
-            {
-                var data = resourceHarvester.ResourceGenerationData;
-                var layerMask = 1 << 6;
-                var colliders = Physics2D.OverlapCircleAll(transform.position, data.ResourceDetectionRange, layerMask);
-
-                _nearbyResourceMatches = Mathf.Clamp(
-                    ScanResourceMatches(data.ResourceType, colliders),
-                    0,
-                    data.MaxResourceNodeCount
-                );
-                _resourceGenerator = new ResourceGenerator(data);
-                _resourceGenerator.SetNearbyResourceMatches(_nearbyResourceMatches);
-
-                _serviceLocator.GetService<BuildingsOverlaysManager>(out _buildingsOverlaysManager);
-                _harvesterOverlay = _buildingsOverlaysManager.RequestHarvesterOverlay(this, _resourceGenerator);
-
-                _serviceLocator.GetService(out _resourceSystemManager);
-                _resourceSystemManager.AddResourceGenerator(_resourceGenerator);
-            }
+            InitializeWithDI();
         }
 
         private void OnDestroy()
         {
-            _buildingsOverlaysManager.ReleaseHarvesterOverlay(_harvesterOverlay);
-            _resourceSystemManager.RemoveResourceGenerator(_resourceGenerator);
+            Cleanup();
         }
 
         private void OnDrawGizmosSelected()
@@ -66,19 +38,68 @@ namespace _Project.Scripts.Architecture
             }
         }
 
-        private int ScanResourceMatches(ResourceTypeSo matchedResource, Collider2D[] colliders)
+        public Transform OverlayPosition => _overlayPosition;
+
+        public ResourceGenerationData BuildingData =>
+            BuildingType is ResourceHarvesterSo harvester ? harvester.ResourceGenerationData : null;
+
+        private void Cleanup()
         {
-            var matches = 0;
-            foreach (var scannedCollider in colliders)
+            _overlayController.HideOverlay(this);
+
+            _resourceGenerator = null;
+            _resourceGeneratorManager = null;
+            _resourceGenerator = null;
+            _overlayController = null;
+            _resourceScanner = null;
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private void InitializeWithDI()
+        {
+            try
             {
-                if (scannedCollider.TryGetComponent<ResourceNode>(out var resourceNode) &&
-                    resourceNode.ResourceType == matchedResource)
-                {
-                    matches++;
-                }
+                var container = DIContainer.Instance;
+
+                _resourceScanner = container.Resolve<IResourceScanner>();
+                _resourceGeneratorFactory = container.Resolve<IResourceGeneratorFactory>();
+                _overlayController = container.Resolve<IOverlayController>();
+                _resourceGeneratorManager = container.Resolve<IResourceGeneratorManager>();
+
+                InitializeHarvester();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"DIResourceHarvester: Failed to resolve dependencies - {ex.Message}");
+            }
+        }
+
+        private void InitializeHarvester()
+        {
+            if (BuildingData == null)
+            {
+                Debug.LogError("DIResourceHarvester: BuildingData is null");
+                return;
             }
 
-            return matches;
+            try
+            {
+                var nearbyResources = _resourceScanner.CountResourceMatches(
+                    BuildingData.ResourceType,
+                    transform.position,
+                    BuildingData.ResourceDetectionRange
+                );
+
+                var clampedMatches = Mathf.Clamp(nearbyResources, 0, BuildingData.MaxResourceNodeCount);
+
+                _resourceGenerator = _resourceGeneratorFactory.CreateResourceGenerator(BuildingData, clampedMatches);
+                _overlayController.ShowOverlay(this, _resourceGenerator);
+                _resourceGeneratorManager.AddResourceGenerator(_resourceGenerator);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"DIResourceHarvester: Initialization failed - {ex.Message}");
+            }
         }
     }
 }

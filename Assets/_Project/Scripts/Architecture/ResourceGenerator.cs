@@ -1,54 +1,54 @@
 ﻿using System;
+using _Project.Scripts.Architecture.Interfaces;
 using _Project.Scripts.Architecture.ScriptableObjects;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture
 {
-    public interface IResourceGenerator
-    {
-        public float GetTimerNormalized { get; }
-        public float GetAmountGeneratedPerSecond { get; }
-        public ResourceTypeSo ResourceType { get; }
-        public event Action<GameResource> OnResourceGenerated;
-        public event Action<IResourceGenerator> OnTick;
-
-        public void TimerTick();
-    }
-
-    public interface IResourceGatherer : IResourceGenerator
-    {
-        public void SetNearbyResourceMatches(int nearbyResourceMatches);
-    }
-
-    public class ResourceGenerator : IResourceGatherer
+    public class ResourceGenerator : IResourceGatherer, IResourceGenerator, IResourceGeneratorEvents
     {
         private readonly ResourceGenerationData _data;
 
         private bool _isWorking;
+        private int _nearbyResourceMatches;
 
         private float _timer;
         private float _timerMax = 1;
 
-        public ResourceGenerator(ResourceGenerationData data)
+        public ResourceGenerator(ResourceGenerationData data, int nearbyResourceMatches)
         {
             _data = data;
-            SetNearbyResourceMatches(0);
+            SetNearbyResourceMatches(nearbyResourceMatches);
         }
-
-        public event Action<GameResource> OnResourceGenerated;
-        public event Action<IResourceGenerator> OnTick;
-        public float GetTimerNormalized => _timerMax != 0 ? 1 - Mathf.Clamp01(_timer / _timerMax) : 0;
-        public float GetAmountGeneratedPerSecond => 1 / _timerMax;
-        public ResourceTypeSo ResourceType => _data?.ResourceType;
 
         public void SetNearbyResourceMatches(int nearbyResourceMatches)
         {
+            _nearbyResourceMatches = nearbyResourceMatches;
+
             _timerMax = (_data.TimerMax / 2f) +
                         _data.TimerMax *
                         (1 - (float)nearbyResourceMatches / _data.MaxResourceNodeCount);
 
             _isWorking = nearbyResourceMatches > 0;
         }
+
+        public float GetTimerNormalized => _timerMax != 0 ? 1 - Mathf.Clamp01(_timer / _timerMax) : 0;
+
+        public float GetAmountGeneratedPerSecond
+        {
+            get
+            {
+                if (_nearbyResourceMatches == 0)
+                {
+                    return 0;
+                }
+
+                var value = _data?.ResourceGenerationCount ?? 1;
+                return value / _timerMax;
+            }
+        }
+
+        public ResourceTypeSo ResourceType => _data?.ResourceType;
 
         public void TimerTick()
         {
@@ -64,6 +64,9 @@ namespace _Project.Scripts.Architecture
             _timer += _timerMax;
             GatherResources();
         }
+
+        public event Action<GameResource> OnResourceGenerated;
+        public event Action<IResourceGenerator> OnTick;
 
         private void GatherResources()
         {

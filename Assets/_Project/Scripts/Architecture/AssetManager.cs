@@ -39,7 +39,7 @@ namespace _Project.Scripts.Architecture
         {
             if (_isInitialized) return;
 
-            await Addressables.InitializeAsync().ToUniTask();
+            await AddressablesAsyncExtensions.ToUniTask(Addressables.InitializeAsync());
             _isInitialized = true;
             _initTaskSource?.TrySetResult(true);
 
@@ -64,7 +64,7 @@ namespace _Project.Scripts.Architecture
             var handle = Addressables.LoadAssetAsync<T>(key);
             _operationHandles[key] = handle;
 
-            T asset = await handle.ToUniTask();
+            T asset = await AddressablesAsyncExtensions.ToUniTask(handle);
 
             if (asset == null)
             {
