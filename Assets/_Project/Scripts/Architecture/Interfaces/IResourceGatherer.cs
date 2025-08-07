@@ -1,4 +1,4 @@
-﻿namespace _Project.Scripts.Architecture
+﻿namespace _Project.Scripts.Architecture.Interfaces
 {
     public interface IResourceGatherer
     {

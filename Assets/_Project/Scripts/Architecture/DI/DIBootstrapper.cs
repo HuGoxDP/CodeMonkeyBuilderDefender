@@ -1,13 +1,14 @@
 ﻿using System;
 using _Project.Scripts.Architecture.InputReader;
 using _Project.Scripts.Architecture.Interfaces;
-using _Project.Scripts.Architecture.MVC.BuildingSystem;
 using _Project.Scripts.Architecture.MVC.ResourceSystem;
+using _Project.Scripts.Architecture.Refactoring;
 using _Project.Scripts.Architecture.ScriptableObjects;
 using UnityEngine;
 
 namespace _Project.Scripts.Architecture.DI
 {
+    // ReSharper disable once InconsistentNaming
     public class DIBootstrapper : MonoBehaviour
     {
         [Header("Settings")] [SerializeField] private bool _initializeOnAwake = true;
@@ -64,13 +65,13 @@ namespace _Project.Scripts.Architecture.DI
                     container.RegisterSingleton<IGameResourceManager, GameResourceManager>(gameResourceManager);
                 }
 
-                var overlayManager = FindFirstObjectByType<BuildingsOverlaysManager>();
+                /*var overlayManager = FindFirstObjectByType<BuildingsOverlaysManager>();
                 if (overlayManager != null)
                 {
                     container.RegisterSingleton<IHarvesterOverlayManager, BuildingsOverlaysManager>(
                         overlayManager
                     );
-                }
+                }*/
 
                 var resourceGeneratorManager = FindFirstObjectByType<ResourceGeneratorManager>();
                 if (resourceGeneratorManager != null)
@@ -80,12 +81,15 @@ namespace _Project.Scripts.Architecture.DI
                     );
                 }
 
-                container.RegisterSingleton<IOverlayController, HarvesterOverlayController>
-                    (new HarvesterOverlayController(container.Resolve<IHarvesterOverlayManager>()));
+                /*container.RegisterSingleton<IOverlayController, HarvesterOverlayController>
+                    (new HarvesterOverlayController(container.Resolve<IHarvesterOverlayManager>()));*/
 
                 // Register fabrics
                 container.RegisterFactory<IResourceGeneratorFactory>(() => new ResourceGeneratorFactory());
+                container.RegisterFactory<IOverlayDataFactory>(() => new OverlayDataFactory());
 
+                var overlayFactory = FindFirstObjectByType<OverlayFactory>();
+                container.RegisterFactory<IOverlayFactory>(() => overlayFactory);
 
                 Debug.Log("DIBootstrapper: Container initialized successfully");
             }

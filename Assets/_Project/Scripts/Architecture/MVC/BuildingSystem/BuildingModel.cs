@@ -118,7 +118,7 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
                 if (!collider.TryGetComponent<Building>(out var building))
                     continue;
 
-                if (building.GetBuildingType().BuildingPrefabRef == buildingType.BuildingPrefabRef)
+                if (building.GetBuildingType.BuildingPrefabRef == buildingType.BuildingPrefabRef)
                 {
                     Debug.Log($" its To close for building with this type");
                     return false;

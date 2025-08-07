@@ -4,9 +4,10 @@ namespace _Project.Scripts.Architecture
 {
     public class ResourceGeneratorFactory : IResourceGeneratorFactory
     {
-        public IResourceGenerator CreateResourceGenerator(ResourceGenerationData data, int nearbyResourceMatches)
+        public IResourceGenerator CreateResourceGenerator(ResourceGenerationSettings settings,
+            int nearbyResourceMatches)
         {
-            return new ResourceGenerator(data, nearbyResourceMatches);
+            return new ResourceGenerator(settings, nearbyResourceMatches);
         }
     }
 }

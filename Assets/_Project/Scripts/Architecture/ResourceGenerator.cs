@@ -5,9 +5,10 @@ using UnityEngine;
 
 namespace _Project.Scripts.Architecture
 {
-    public class ResourceGenerator : IResourceGatherer, IResourceGenerator, IResourceGeneratorEvents
+    public class ResourceGenerator : IResourceGatherer, IResourceGenerator, IResourceGeneratorEvents,
+        IResourceGeneratorData
     {
-        private readonly ResourceGenerationData _data;
+        private readonly ResourceGenerationSettings _settings;
 
         private bool _isWorking;
         private int _nearbyResourceMatches;
@@ -15,9 +16,9 @@ namespace _Project.Scripts.Architecture
         private float _timer;
         private float _timerMax = 1;
 
-        public ResourceGenerator(ResourceGenerationData data, int nearbyResourceMatches)
+        public ResourceGenerator(ResourceGenerationSettings settings, int nearbyResourceMatches)
         {
-            _data = data;
+            _settings = settings;
             SetNearbyResourceMatches(nearbyResourceMatches);
         }
 
@@ -25,30 +26,12 @@ namespace _Project.Scripts.Architecture
         {
             _nearbyResourceMatches = nearbyResourceMatches;
 
-            _timerMax = (_data.TimerMax / 2f) +
-                        _data.TimerMax *
-                        (1 - (float)nearbyResourceMatches / _data.MaxResourceNodeCount);
+            _timerMax = (_settings.TimerMax / 2f) +
+                        _settings.TimerMax *
+                        (1 - (float)nearbyResourceMatches / _settings.MaxResourceNodeCount);
 
             _isWorking = nearbyResourceMatches > 0;
         }
-
-        public float GetTimerNormalized => _timerMax != 0 ? 1 - Mathf.Clamp01(_timer / _timerMax) : 0;
-
-        public float GetAmountGeneratedPerSecond
-        {
-            get
-            {
-                if (_nearbyResourceMatches == 0)
-                {
-                    return 0;
-                }
-
-                var value = _data?.ResourceGenerationCount ?? 1;
-                return value / _timerMax;
-            }
-        }
-
-        public ResourceTypeSo ResourceType => _data?.ResourceType;
 
         public void TimerTick()
         {
@@ -65,15 +48,33 @@ namespace _Project.Scripts.Architecture
             GatherResources();
         }
 
+        public float GetTimerNormalized => _timerMax != 0 ? 1 - Mathf.Clamp01(_timer / _timerMax) : 0;
+
+        public float GetAmountGeneratedPerSecond
+        {
+            get
+            {
+                if (_nearbyResourceMatches == 0)
+                {
+                    return 0;
+                }
+
+                var value = _settings?.ResourceGenerationCount ?? 1;
+                return value / _timerMax;
+            }
+        }
+
+        public ResourceTypeSo ResourceType => _settings?.ResourceType;
+
         public event Action<GameResource> OnResourceGenerated;
-        public event Action<IResourceGenerator> OnTick;
+        public event Action<IResourceGeneratorData> OnTick;
 
         private void GatherResources()
         {
             var resource = new GameResource()
             {
-                ResourceType = _data.ResourceType,
-                Amount = _data.ResourceGenerationCount
+                ResourceType = _settings.ResourceType,
+                Amount = _settings.ResourceGenerationCount
             };
 
             OnResourceGenerated?.Invoke(resource);

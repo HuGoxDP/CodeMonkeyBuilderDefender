@@ -9,8 +9,8 @@ namespace _Project.Scripts.Architecture.ScriptableObjects
     )]
     public class ResourceHarvesterSo : BuildingTypeSo
     {
-        [SerializeField] private ResourceGenerationData _resourceGenerationData;
+        [SerializeField] private ResourceGenerationSettings _resourceGenerationSettings;
 
-        public ResourceGenerationData ResourceGenerationData => _resourceGenerationData;
+        public ResourceGenerationSettings ResourceGenerationSettings => _resourceGenerationSettings;
     }
 }

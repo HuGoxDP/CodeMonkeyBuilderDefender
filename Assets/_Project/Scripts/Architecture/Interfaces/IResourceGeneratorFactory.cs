@@ -2,6 +2,6 @@
 {
     internal interface IResourceGeneratorFactory
     {
-        IResourceGenerator CreateResourceGenerator(ResourceGenerationData data, int nearbyResourceMatches);
+        IResourceGenerator CreateResourceGenerator(ResourceGenerationSettings settings, int nearbyResourceMatches);
     }
 }
