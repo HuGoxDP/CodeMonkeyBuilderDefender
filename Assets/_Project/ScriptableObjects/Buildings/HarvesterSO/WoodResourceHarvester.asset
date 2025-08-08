@@ -14,9 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <NameString>k__BackingField: WoodResourceHarvester
   <Icon>k__BackingField: {fileID: 21300000, guid: 793ca27a5a3378149aaa12abe85933f4, type: 3}
-  <ResourceAmounts>k__BackingField:
-  - ResourceType: {fileID: 11400000, guid: 3ae832c0fdb8b4248a83cb5334cba786, type: 2}
-    Amount: 15
+  <ResourceCostAmounts>k__BackingField: []
   <BuildingPrefabRef>k__BackingField:
     m_AssetGUID: 56a1cc74207e39f479a6747602f2e326
     m_SubObjectName: 
@@ -25,9 +23,9 @@ MonoBehaviour:
     m_EditorAssetChanged: 0
   <MinConstructionRadius>k__BackingField: 8
   <MaxConstructionRadius>k__BackingField: 10
-  _resourceGenerationData:
-    _timerMax: 0.5
+  _resourceGenerationSettings:
+    _timerMax: 5
     _resourceType: {fileID: 11400000, guid: 3ae832c0fdb8b4248a83cb5334cba786, type: 2}
     _resourceGenerationCount: 1
-    _resourceDetectionRange: 7
+    _resourceDetectionRange: 10
     _maxResourceNodeCount: 6

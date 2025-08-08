@@ -30,6 +30,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be46312742cfe0a458be72f0dd0c8eab
+    m_Address: Buildings/Harvester/HQ
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 43ad1dddf7af6ac48b07c4680ca48880, type: 2}
   m_SchemaSet:
