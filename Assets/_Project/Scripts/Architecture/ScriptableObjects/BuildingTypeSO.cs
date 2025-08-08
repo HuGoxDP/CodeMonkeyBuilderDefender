@@ -18,12 +18,8 @@ namespace _Project.Scripts.Architecture.ScriptableObjects
         }
     }
 
-    [CreateAssetMenu(
-        menuName = "Game/Building/Create BuildingType",
-        fileName = "BuildingType",
-        order = 0
-    )]
-    public class BuildingTypeSo : ScriptableObject
+
+    public abstract class BuildingTypeSo : ScriptableObject
     {
         [field: SerializeField] public string NameString { get; private set; }
         [field: SerializeField] public Sprite Icon { get; private set; }
