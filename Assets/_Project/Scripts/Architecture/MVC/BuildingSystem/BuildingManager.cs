@@ -14,6 +14,9 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
     {
         [SerializeField] private BuildingGhost _buildingGhost;
         [SerializeField] private BuildingView _buildingView;
+
+        [SerializeField] private Transform _buildingsParent;
+
         private IBuildingInputReader _buildingInputReader;
 
         private IBuildingModel _buildingModel;
@@ -109,7 +112,7 @@ namespace _Project.Scripts.Architecture.MVC.BuildingSystem
                         type,
                         pos,
                         Quaternion.identity,
-                        transform,
+                        _buildingsParent,
                         _cts.Token
                     );
                     _buildingModel.AddBuilding(newBuilding);
