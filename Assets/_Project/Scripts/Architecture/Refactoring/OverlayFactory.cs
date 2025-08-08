@@ -7,32 +7,51 @@ namespace _Project.Scripts.Architecture.Refactoring
     public class OverlayFactory : MonoBehaviour, IOverlayFactory
     {
         [SerializeField] private GameObject _parent;
-        private Dictionary<Type, GameObject> _overlayDictionary;
+        [SerializeField] private OverlayPrefabEntry[] _configs;
+
+        private Dictionary<Type, GameObject> _overlayPrefabs;
 
         private void Awake()
         {
-            _overlayDictionary = new Dictionary<Type, GameObject>();
-        }
+            Validate();
+            _overlayPrefabs = new Dictionary<Type, GameObject>();
 
-        public void Register<T>(GameObject prefab)
-        {
-            Debug.Log($"Registering overlay {typeof(T).Name}");
-            if (_overlayDictionary != null)
-                _overlayDictionary[typeof(T)] = prefab;
+            foreach (var config in _configs)
+            {
+                var prefab = config.Prefab;
+                var type = config.Type;
+                if (prefab == null || type == null)
+                {
+                    continue;
+                }
+
+                if (!_overlayPrefabs.ContainsKey(type))
+                {
+                    _overlayPrefabs.TryAdd(type, prefab);
+                }
+            }
         }
 
         public T CreateOverlay<T>()
         {
-            /*
-            var prefab = _overlayDictionary[typeof(T)];
-            var go = Instantiate(prefab, _parent.transform);
-            if (go.TryGetComponent<T>(out var overlay))
+            if (_overlayPrefabs.TryGetValue(typeof(T), out var prefab))
             {
-                return overlay;
-            }
-            */
+                var go = Instantiate(prefab, _parent.transform);
+                if (go.TryGetComponent<T>(out var overlay))
+                {
+                    return overlay;
+                }
 
-            throw new Exception($"Unable to create overlay of type {typeof(T).Name}");
+                throw new Exception($"Prefab {prefab.name} does not have a component of type {typeof(T)}");
+            }
+
+            throw new Exception($"There is no overlay prefab {typeof(T)}");
+        }
+
+        private void Validate()
+        {
+            if (_parent == null)
+                throw new NullReferenceException("_parent");
         }
     }
 }
