@@ -14,13 +14,13 @@ namespace _Project.Scripts.Architecture.Refactoring
         private IResourceGeneratorEvents _currentGeneratorEvents;
         private IResourceGeneratorData _currentResourceGeneratorData;
 
-        protected override void OnDestroy()
+        private void Awake()
         {
-            base.OnDestroy();
-            Cleanup();
+            Validate();
         }
 
-        private void OnValidate()
+
+        private void Validate()
         {
             if (_resourceTypeImage == null)
                 _resourceTypeImage = GetComponentInChildren<Image>();
@@ -32,16 +32,6 @@ namespace _Project.Scripts.Architecture.Refactoring
                 _resourceGatheringCountText = GetComponentInChildren<TextMeshProUGUI>();
         }
 
-        private void Cleanup()
-        {
-            if (_currentGeneratorEvents != null)
-            {
-                _currentGeneratorEvents.OnTick -= OnTick;
-                _currentGeneratorEvents = null;
-            }
-
-            _currentResourceGeneratorData = null;
-        }
 
         private void OnTick(IResourceGeneratorData resourceGeneratorData)
         {
@@ -50,6 +40,7 @@ namespace _Project.Scripts.Architecture.Refactoring
                 _progressBar.value = resourceGeneratorData.GetTimerNormalized;
             }
         }
+
 
         public override void UpdateData(IHarvesterOverlayData data)
         {
@@ -71,10 +62,16 @@ namespace _Project.Scripts.Architecture.Refactoring
             }
         }
 
+
         public override void Release()
         {
-            base.Release();
-            Cleanup();
+            if (_currentGeneratorEvents != null)
+            {
+                _currentGeneratorEvents.OnTick -= OnTick;
+                _currentGeneratorEvents = null;
+            }
+
+            _currentResourceGeneratorData = null;
         }
     }
 }
